@@ -1,0 +1,10 @@
+ALTER TABLE aircrafts ADD COLUMN consumption_per_hour DOUBLE PRECISION;
+UPDATE aircrafts SET consumption_per_hour = 109.4 WHERE registration = 'PR-MDL';
+UPDATE aircrafts SET consumption_per_hour = 50 WHERE registration = 'PS-AVE';
+UPDATE aircrafts SET consumption_per_hour = 60 WHERE registration = 'PT-OPC';
+UPDATE aircrafts SET consumption_per_hour = 109.4 WHERE registration = 'PT-WSR';
+UPDATE aircrafts SET consumption_per_hour = 150 WHERE registration = 'PT-TOR';
+UPDATE aircrafts SET consumption_per_hour = 109.4 WHERE registration = 'PT-OJG';
+UPDATE aircrafts SET consumption_per_hour = 120 WHERE registration = 'PT-RVJ';
+UPDATE aircrafts SET consumption_per_hour = 300 WHERE registration = 'PP-JCP';
+UPDATE aircrafts SET consumption_per_hour = 40 WHERE registration = 'PT-JPK';
