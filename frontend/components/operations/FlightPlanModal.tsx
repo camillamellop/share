@@ -163,10 +163,9 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Form */}
             <div className="lg:col-span-2">
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <Label htmlFor="aircraft" className="text-slate-300 text-xs">Aeronave</Label>
                     <Select value={form.aircraft} onValueChange={(value) => handleChange('aircraft', value)}>
@@ -187,12 +186,12 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
                     <Input id="altitude" type="number" value={form.altitude} onChange={(e) => handleChange('altitude', parseInt(e.target.value) || 0)} className="bg-slate-800 border-slate-700 text-white" />
                   </div>
                   <div>
-                    <Label htmlFor="fuel" className="text-slate-300 text-xs">Fuel (L)</Label>
-                    <Input id="fuel" value={calculations?.fuel_burn_liters || ''} readOnly className="bg-slate-700 border-slate-600 text-white" />
+                    <Label htmlFor="payload" className="text-slate-300 text-xs">Payload (kg)</Label>
+                    <Input id="payload" type="number" value={form.payload} onChange={(e) => handleChange('payload', parseInt(e.target.value) || 0)} className="bg-slate-800 border-slate-700 text-white" />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="departure_airport" className="text-slate-300 text-xs">Partida (ICAO)</Label>
                     <Input id="departure_airport" value={form.departure_airport} onChange={(e) => handleChange('departure_airport', e.target.value.toUpperCase())} required className="bg-slate-800 border-slate-700 text-white" />
@@ -208,7 +207,7 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
                   <Input id="departure_time" type="datetime-local" value={form.departure_time} onChange={(e) => handleChange('departure_time', e.target.value)} required className="bg-slate-800 border-slate-700 text-white" />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <Label className="text-slate-400 text-xs">Dist (NM)</Label>
                     <Input value={calculations?.distance_nm || ''} readOnly className="bg-slate-700 border-slate-600 text-white" />
@@ -243,7 +242,6 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
               </form>
             </div>
 
-            {/* Sidebar */}
             <div className="space-y-4">
               {favoriteRoutes.length > 0 && (
                 <Card className="bg-slate-800/50 border-slate-700">

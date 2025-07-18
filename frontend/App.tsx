@@ -36,7 +36,7 @@ function AppRoutes() {
     <div className="min-h-screen bg-slate-950">
       <Routes>
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={<Layout><Dashboard /></Layout>} />
           <Route path="/financial/company-config" element={<Layout><CompanyConfig /></Layout>} />
           <Route path="/financial/receipts" element={<Layout><ReceiptGenerator /></Layout>} />
           <Route path="/financial/travel-reports" element={<Layout><TravelReportGenerator /></Layout>} />
