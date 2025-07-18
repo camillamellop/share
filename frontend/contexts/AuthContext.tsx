@@ -1,7 +1,4 @@
-import { createContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import backend from '~backend/client';
-import { jwtDecode } from 'jwt-decode';
+import { createContext, ReactNode } from 'react';
 
 interface User {
   userID: string;
@@ -22,65 +19,26 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
-
-  const decodeToken = (tokenStr: string): User | null => {
-    try {
-      const decoded: any = jwtDecode(tokenStr);
-      return {
-        userID: decoded.sub,
-        email: decoded.email,
-        name: decoded.name,
-        role: decoded.role,
-      };
-    } catch (error) {
-      console.error("Failed to decode token:", error);
-      return null;
-    }
+  // With the login flow removed, we provide a static, authenticated user context.
+  // This mock user is an admin, allowing access to all parts of the app.
+  const user: User = {
+    userID: 'user_00237089130',
+    email: 'camilla.pereira@sharebrasil.com',
+    name: 'Camilla de Mello Pereira',
+    role: 'admin',
   };
-
-  useEffect(() => {
-    const storedToken = localStorage.getItem('authToken');
-    if (storedToken) {
-      const decodedUser = decodeToken(storedToken);
-      if (decodedUser) {
-        setUser(decodedUser);
-        setToken(storedToken);
-      }
-    }
-    setIsLoading(false);
-  }, []);
-
-  const login = async (email: string, password: string) => {
-    const response = await backend.auth.login({ email, password });
-    const { token: newToken } = response;
-    
-    localStorage.setItem('authToken', newToken);
-    const decodedUser = decodeToken(newToken);
-    
-    if (decodedUser) {
-      setUser(decodedUser);
-      setToken(newToken);
-    }
-  };
-
-  const logout = useCallback(() => {
-    setUser(null);
-    setToken(null);
-    localStorage.removeItem('authToken');
-    navigate('/login');
-  }, [navigate]);
 
   const value = {
-    isAuthenticated: !!token,
+    isAuthenticated: true,
     user,
-    token,
-    isLoading,
-    login,
-    logout,
+    token: null,
+    isLoading: false,
+    login: async () => {
+      // No-op
+    },
+    logout: () => {
+      // No-op
+    },
   };
 
   return (

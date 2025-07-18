@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import LoginPage from "./components/auth/LoginPage";
 import Dashboard from "./components/Dashboard";
 import Layout from "./components/Layout";
 import CompanyConfig from "./components/financial/CompanyConfig";
@@ -36,7 +35,6 @@ function AppRoutes() {
   return (
     <div className="min-h-screen bg-slate-950">
       <Routes>
-        <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/financial/company-config" element={<Layout><CompanyConfig /></Layout>} />

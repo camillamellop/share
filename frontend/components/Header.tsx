@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Bell, Thermometer, Loader2, LogOut } from "lucide-react";
+import { Bell, Thermometer, Loader2 } from "lucide-react";
 import backend from "~backend/client";
 import GlobalSearch from "./GlobalSearch";
-import { useAuth } from "../hooks/useAuth";
-import { Button } from "./ui/button";
 
 export default function Header() {
-  const { logout } = useAuth();
   const [location, setLocation] = useState<{ lat: number; lon: number } | null>(null);
 
   useEffect(() => {
@@ -70,10 +67,6 @@ export default function Header() {
               </>
             ) : null}
           </div>
-
-          <Button variant="ghost" size="icon" onClick={logout} className="text-slate-400 hover:text-white">
-            <LogOut className="w-5 h-5" />
-          </Button>
         </div>
       </div>
     </header>

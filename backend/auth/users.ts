@@ -1,6 +1,5 @@
 import { api, APIError } from "encore.dev/api";
 import { db } from "./encore.service";
-import { generateToken } from "./auth";
 import * as bcrypt from "bcrypt";
 import { operations, profile as profileClient } from "~encore/clients";
 import { getAuthData } from "~encore/auth";
@@ -13,15 +12,6 @@ export interface User {
   is_active: boolean;
   created_at: Date;
   updated_at: Date;
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  token: string;
 }
 
 export interface UsersResponse {
@@ -113,33 +103,6 @@ async function seedUsers() {
     }
   }
 }
-
-// Logs in a user.
-export const login = api<LoginRequest, LoginResponse>(
-  { expose: true, method: "POST", path: "/auth/login" },
-  async (req) => {
-    const userCount = await db.queryRow<{ count: string }>`SELECT COUNT(*) FROM users`;
-    if (userCount && parseInt(userCount.count) === 0) {
-      await seedUsers();
-    }
-
-    const user = await db.queryRow<User & { password_hash: string }>`
-      SELECT * FROM users WHERE email = ${req.email}
-    `;
-
-    if (!user || !user.is_active) {
-      throw APIError.unauthenticated("invalid email or password");
-    }
-
-    const validPassword = await bcrypt.compare(req.password, user.password_hash);
-    if (!validPassword) {
-      throw APIError.unauthenticated("invalid email or password");
-    }
-
-    const token = await generateToken(user.id, user.email, user.name, user.role);
-    return { token };
-  }
-);
 
 // Lists all users. (Admin only)
 export const listUsers = api<void, UsersResponse>(
