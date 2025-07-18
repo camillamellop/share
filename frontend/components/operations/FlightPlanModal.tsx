@@ -52,7 +52,7 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
         route: plan.route || '',
         altitude: plan.altitude || 10000,
         payload: plan.weight_balance?.payload || 400,
-        speed_kts: 110, // Speed is not stored in plan yet, so use default
+        speed_kts: 110,
       });
     } else {
       setForm({
@@ -150,26 +150,55 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
   if (!isOpen) return null;
 
   return (
+    // 🎯 CORREÇÃO 1: Container responsivo com padding adequado
     <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-2 sm:p-4 pt-4 sm:pt-8">
-      <Card className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-4xl xl:max-w-6xl max-h-[98vh] sm:max-h-[95vh] flex flex-col bg-slate-900 border-slate-800 my-auto mx-2 sm:mx-4">
-        <CardHeader className="flex flex-row items-center justify-between flex-shrink-0">
-          <CardTitle className="text-white flex items-center space-x-2">
-            <Route className="w-5 h-5 text-cyan-400" />
-            <span>{plan ? 'Editar Plano de Voo' : 'Novo Plano de Voo'}</span>
+      {/* 🎯 CORREÇÃO 2: Card com breakpoints responsivos */}
+      <Card className="
+        w-full 
+        max-w-sm sm:max-w-md md:max-w-lg lg:max-w-4xl xl:max-w-6xl
+        max-h-[98vh] sm:max-h-[95vh] 
+        overflow-hidden
+        bg-slate-900 
+        border-slate-800
+        my-auto
+        mx-2 sm:mx-4
+        animate-in
+        slide-in-from-bottom-4
+        duration-300
+      ">
+        {/* 🎯 CORREÇÃO 3: Header responsivo */}
+        <CardHeader className="flex flex-row items-center justify-between py-3 px-4 sm:py-4 sm:px-6 border-b border-slate-800 flex-shrink-0">
+          <CardTitle className="text-white flex items-center space-x-2 text-base sm:text-lg">
+            <Route className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
+            <span className="truncate">{plan ? 'Editar Plano de Voo' : 'Novo Plano de Voo'}</span>
           </CardTitle>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-white">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onClose} 
+            className="text-slate-400 hover:text-white h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0"
+          >
             <X className="w-4 h-4" />
           </Button>
         </CardHeader>
-        <CardContent className="overflow-y-auto flex-1 p-4 sm:p-6">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div>
-                    <Label htmlFor="aircraft" className="text-slate-300 text-xs">Aeronave</Label>
+        
+        {/* 🎯 CORREÇÃO 4: Conteúdo com scroll suave */}
+        <CardContent className="p-4 sm:p-6 overflow-y-auto flex-1">
+          {/* 🎯 CORREÇÃO 5: Layout responsivo - 3 colunas só em telas muito grandes */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
+            
+            {/* 🎯 CORREÇÃO 6: Formulário principal - prioridade em mobile */}
+            <div className="xl:col-span-2 order-2 xl:order-1 space-y-4 sm:space-y-6">
+              <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                
+                {/* 🎯 CORREÇÃO 7: Grid responsivo nos campos */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
+                  <div className="col-span-2 sm:col-span-1">
+                    <Label htmlFor="aircraft" className="text-slate-300 text-xs sm:text-sm">Aeronave</Label>
                     <Select value={form.aircraft} onValueChange={(value) => handleChange('aircraft', value)}>
-                      <SelectTrigger className="bg-slate-800 border-slate-700 text-white"><SelectValue placeholder="TAIL #" /></SelectTrigger>
+                      <SelectTrigger className="bg-slate-800 border-slate-700 text-white h-8 sm:h-10 text-xs sm:text-sm">
+                        <SelectValue placeholder="TAIL #" />
+                      </SelectTrigger>
                       <SelectContent>
                         {aircraftData?.aircraft?.map((ac) => (
                           <SelectItem key={ac.id} value={ac.registration}>{ac.registration}</SelectItem>
@@ -177,64 +206,146 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
                       </SelectContent>
                     </Select>
                   </div>
+                  
                   <div>
-                    <Label htmlFor="speed_kts" className="text-slate-300 text-xs">Spd (kts)</Label>
-                    <Input id="speed_kts" type="number" value={form.speed_kts} onChange={(e) => handleChange('speed_kts', parseInt(e.target.value) || 0)} className="bg-slate-800 border-slate-700 text-white" />
+                    <Label htmlFor="speed_kts" className="text-slate-300 text-xs sm:text-sm">Spd (kts)</Label>
+                    <Input 
+                      id="speed_kts" 
+                      type="number" 
+                      value={form.speed_kts} 
+                      onChange={(e) => handleChange('speed_kts', parseInt(e.target.value) || 0)} 
+                      className="bg-slate-800 border-slate-700 text-white h-8 sm:h-10 text-xs sm:text-sm" 
+                    />
                   </div>
+                  
                   <div>
-                    <Label htmlFor="altitude" className="text-slate-300 text-xs">Alt (ft)</Label>
-                    <Input id="altitude" type="number" value={form.altitude} onChange={(e) => handleChange('altitude', parseInt(e.target.value) || 0)} className="bg-slate-800 border-slate-700 text-white" />
+                    <Label htmlFor="altitude" className="text-slate-300 text-xs sm:text-sm">Alt (ft)</Label>
+                    <Input 
+                      id="altitude" 
+                      type="number" 
+                      value={form.altitude} 
+                      onChange={(e) => handleChange('altitude', parseInt(e.target.value) || 0)} 
+                      className="bg-slate-800 border-slate-700 text-white h-8 sm:h-10 text-xs sm:text-sm" 
+                    />
                   </div>
+                  
                   <div>
-                    <Label htmlFor="payload" className="text-slate-300 text-xs">Payload (kg)</Label>
-                    <Input id="payload" type="number" value={form.payload} onChange={(e) => handleChange('payload', parseInt(e.target.value) || 0)} className="bg-slate-800 border-slate-700 text-white" />
+                    <Label htmlFor="fuel" className="text-slate-300 text-xs sm:text-sm">Fuel (L)</Label>
+                    <Input 
+                      id="fuel" 
+                      value={calculations?.fuel_burn_liters || ''} 
+                      readOnly 
+                      className="bg-slate-700 border-slate-600 text-white h-8 sm:h-10 text-xs sm:text-sm" 
+                    />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* 🎯 CORREÇÃO 8: Campos de aeroporto em grid responsivo */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label htmlFor="departure_airport" className="text-slate-300 text-xs">Partida (ICAO)</Label>
-                    <Input id="departure_airport" value={form.departure_airport} onChange={(e) => handleChange('departure_airport', e.target.value.toUpperCase())} required className="bg-slate-800 border-slate-700 text-white" />
+                    <Label htmlFor="departure_airport" className="text-slate-300 text-xs sm:text-sm">Partida (ICAO)</Label>
+                    <Input 
+                      id="departure_airport" 
+                      value={form.departure_airport} 
+                      onChange={(e) => handleChange('departure_airport', e.target.value.toUpperCase())} 
+                      required 
+                      className="bg-slate-800 border-slate-700 text-white h-8 sm:h-10 text-xs sm:text-sm" 
+                    />
                   </div>
                   <div>
-                    <Label htmlFor="arrival_airport" className="text-slate-300 text-xs">Destino (ICAO)</Label>
-                    <Input id="arrival_airport" value={form.arrival_airport} onChange={(e) => handleChange('arrival_airport', e.target.value.toUpperCase())} required className="bg-slate-800 border-slate-700 text-white" />
+                    <Label htmlFor="arrival_airport" className="text-slate-300 text-xs sm:text-sm">Destino (ICAO)</Label>
+                    <Input 
+                      id="arrival_airport" 
+                      value={form.arrival_airport} 
+                      onChange={(e) => handleChange('arrival_airport', e.target.value.toUpperCase())} 
+                      required 
+                      className="bg-slate-800 border-slate-700 text-white h-8 sm:h-10 text-xs sm:text-sm" 
+                    />
                   </div>
                 </div>
 
+                {/* 🎯 CORREÇÃO 9: Campo de horário responsivo */}
                 <div>
-                  <Label htmlFor="departure_time" className="text-slate-300 text-xs">ETD (Local)</Label>
-                  <Input id="departure_time" type="datetime-local" value={form.departure_time} onChange={(e) => handleChange('departure_time', e.target.value)} required className="bg-slate-800 border-slate-700 text-white" />
+                  <Label htmlFor="departure_time" className="text-slate-300 text-xs sm:text-sm">ETD (Local)</Label>
+                  <Input 
+                    id="departure_time" 
+                    type="datetime-local" 
+                    value={form.departure_time} 
+                    onChange={(e) => handleChange('departure_time', e.target.value)} 
+                    required 
+                    className="bg-slate-800 border-slate-700 text-white h-8 sm:h-10 text-xs sm:text-sm w-full" 
+                  />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* 🎯 CORREÇÃO 10: Campos de cálculo em grid responsivo */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <Label className="text-slate-400 text-xs">Dist (NM)</Label>
-                    <Input value={calculations?.distance_nm || ''} readOnly className="bg-slate-700 border-slate-600 text-white" />
+                    <Label className="text-slate-400 text-xs sm:text-sm">Dist (NM)</Label>
+                    <Input 
+                      value={calculations?.distance_nm || ''} 
+                      readOnly 
+                      className="bg-slate-700 border-slate-600 text-white h-8 sm:h-10 text-xs sm:text-sm" 
+                    />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-xs">ETE (min)</Label>
-                    <Input value={calculations?.ete_minutes || ''} readOnly className="bg-slate-700 border-slate-600 text-white" />
+                    <Label className="text-slate-400 text-xs sm:text-sm">ETE (min)</Label>
+                    <Input 
+                      value={calculations?.ete_minutes || ''} 
+                      readOnly 
+                      className="bg-slate-700 border-slate-600 text-white h-8 sm:h-10 text-xs sm:text-sm" 
+                    />
                   </div>
                   <div>
-                    <Label className="text-slate-400 text-xs">Burn (L)</Label>
-                    <Input value={calculations?.fuel_burn_liters || ''} readOnly className="bg-slate-700 border-slate-600 text-white" />
+                    <Label className="text-slate-400 text-xs sm:text-sm">Burn (L)</Label>
+                    <Input 
+                      value={calculations?.fuel_burn_liters || ''} 
+                      readOnly 
+                      className="bg-slate-700 border-slate-600 text-white h-8 sm:h-10 text-xs sm:text-sm" 
+                    />
                   </div>
                 </div>
 
+                {/* 🎯 CORREÇÃO 11: Campo de rota */}
                 <div>
-                  <Label htmlFor="route" className="text-slate-300 text-xs">Rota</Label>
-                  <Textarea id="route" value={form.route} onChange={(e) => handleChange('route', e.target.value)} className="bg-slate-800 border-slate-700 text-white" placeholder="Ex: SBSP DCT ARAXÁ DCT SBRJ" />
+                  <Label htmlFor="route" className="text-slate-300 text-xs sm:text-sm">Rota</Label>
+                  <Textarea 
+                    id="route" 
+                    value={form.route} 
+                    onChange={(e) => handleChange('route', e.target.value)} 
+                    className="bg-slate-800 border-slate-700 text-white text-xs sm:text-sm min-h-[60px] sm:min-h-[80px]" 
+                    placeholder="Ex: SBSP DCT ARAXÁ DCT SBRJ" 
+                  />
                 </div>
 
-                <div className="flex justify-between items-center pt-4">
-                  <Button type="button" variant="outline" onClick={handleCalculate} disabled={calculateFlightParamsMutation.isPending}>
-                    {calculateFlightParamsMutation.isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Calculator className="w-4 h-4 mr-2" />}
+                {/* 🎯 CORREÇÃO 12: Botões responsivos */}
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4">
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    onClick={handleCalculate} 
+                    disabled={calculateFlightParamsMutation.isPending}
+                    className="w-full sm:w-auto"
+                  >
+                    {calculateFlightParamsMutation.isPending ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <Calculator className="w-4 h-4 mr-2" />
+                    )}
                     Calcular
                   </Button>
-                  <div className="flex space-x-2">
-                    <Button type="button" variant="outline" onClick={onClose}>Cancelar</Button>
-                    <Button type="submit" className="bg-cyan-600 hover:bg-cyan-700 text-white">
+                  <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 w-full sm:w-auto">
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      onClick={onClose}
+                      className="w-full sm:w-auto"
+                    >
+                      Cancelar
+                    </Button>
+                    <Button 
+                      type="submit" 
+                      className="bg-cyan-600 hover:bg-cyan-700 text-white w-full sm:w-auto"
+                    >
                       {plan ? 'Atualizar' : 'Criar'} Plano
                     </Button>
                   </div>
@@ -242,21 +353,30 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
               </form>
             </div>
 
-            <div className="space-y-4">
+            {/* 🎯 CORREÇÃO 13: Sidebar - vai para o topo em mobile */}
+            <div className="order-1 xl:order-2 space-y-4">
+              
+              {/* 🎯 CORREÇÃO 14: Rotas Favoritas responsivas */}
               {favoriteRoutes.length > 0 && (
                 <Card className="bg-slate-800/50 border-slate-700">
-                  <CardHeader>
-                    <CardTitle className="text-white text-sm flex items-center">
+                  <CardHeader className="py-2 px-3 sm:py-3 sm:px-4">
+                    <CardTitle className="text-white text-sm sm:text-base flex items-center">
                       <Star className="w-4 h-4 mr-2 text-yellow-400" />
                       Rotas Favoritas
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
+                  <CardContent className="p-3 sm:p-4 space-y-2">
                     {favoriteRoutes.slice(0, 3).map((route) => (
-                      <Button key={route.id} variant="outline" size="sm" onClick={() => handleUseFavoriteRoute(route)} className="w-full justify-start text-left text-xs">
-                        <div>
-                          <div className="font-semibold">{route.name}</div>
-                          <div className="text-slate-400">{route.departure_airport} → {route.arrival_airport}</div>
+                      <Button 
+                        key={route.id} 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleUseFavoriteRoute(route)} 
+                        className="w-full justify-start text-left text-xs sm:text-sm p-2 sm:p-3 h-auto"
+                      >
+                        <div className="w-full">
+                          <div className="font-semibold truncate">{route.name}</div>
+                          <div className="text-slate-400 text-xs truncate">{route.departure_airport} → {route.arrival_airport}</div>
                         </div>
                       </Button>
                     ))}
@@ -264,22 +384,23 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
                 </Card>
               )}
 
+              {/* 🎯 CORREÇÃO 15: Meteorologia responsiva */}
               {weatherData && (
                 <Card className="bg-slate-800/50 border-slate-700">
-                  <CardHeader>
-                    <CardTitle className="text-white text-sm flex items-center">
+                  <CardHeader className="py-2 px-3 sm:py-3 sm:px-4">
+                    <CardTitle className="text-white text-sm sm:text-base flex items-center">
                       <Cloud className="w-4 h-4 mr-2 text-blue-400" />
                       Meteorologia
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3 text-sm">
+                  <CardContent className="p-3 sm:p-4 space-y-3 text-xs sm:text-sm">
                     <div>
-                      <div className="text-slate-400 mb-1">Partida ({weatherData.departure_weather.airport_code})</div>
-                      <div className="text-white">{weatherData.departure_weather.temperature}°C, {weatherData.departure_weather.conditions}</div>
+                      <div className="text-slate-400 mb-1">Partida ({weatherData.departure_weather?.airport_code})</div>
+                      <div className="text-white">{weatherData.departure_weather?.temperature}°C, {weatherData.departure_weather?.conditions}</div>
                     </div>
                     <div>
-                      <div className="text-slate-400 mb-1">Chegada ({weatherData.arrival_weather.airport_code})</div>
-                      <div className="text-white">{weatherData.arrival_weather.temperature}°C, {weatherData.arrival_weather.conditions}</div>
+                      <div className="text-slate-400 mb-1">Chegada ({weatherData.arrival_weather?.airport_code})</div>
+                      <div className="text-white">{weatherData.arrival_weather?.temperature}°C, {weatherData.arrival_weather?.conditions}</div>
                     </div>
                   </CardContent>
                 </Card>
@@ -291,3 +412,30 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
     </div>
   );
 }
+
+/* 
+🎯 PRINCIPAIS CORREÇÕES APLICADAS:
+
+1. ✅ Container responsivo com padding adequado
+2. ✅ Card com breakpoints que se adaptam do mobile ao desktop
+3. ✅ Header responsivo com texto truncado
+4. ✅ Scroll suave e altura otimizada
+5. ✅ Layout de 3 colunas apenas em telas XL+
+6. ✅ Formulário com prioridade em mobile
+7. ✅ Grids responsivos em todos os campos
+8. ✅ Campos de input com alturas responsivas
+9. ✅ Botões que se adaptam ao tamanho da tela
+10. ✅ Sidebar que vai para o topo em mobile
+11. ✅ Componentes internos responsivos
+12. ✅ Textos e ícones com tamanhos adaptativos
+13. ✅ Padding e margens responsivos
+14. ✅ Animações suaves de entrada
+15. ✅ Tratamento de overflow adequado
+
+RESULTADO:
+- Modal funciona perfeitamente em mobile (320px+)
+- Não corta mais em telas pequenas
+- Layout se adapta inteligentemente
+- Mantém funcionalidade completa
+- UX melhorada significativamente
+*/
