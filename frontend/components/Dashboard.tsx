@@ -29,7 +29,7 @@ export default function Dashboard() {
       </div>
       
       {/* Right sidebar */}
-      <div className="space-y-6">
+      <div className="lg:col-span-1 space-y-6">
         <div className="bg-slate-900/90 backdrop-blur-sm rounded-lg p-4 border border-slate-800">
           <div className="text-center">
             <div className="text-sm text-slate-400 mb-1">HORÁRIO DO SISTEMA</div>

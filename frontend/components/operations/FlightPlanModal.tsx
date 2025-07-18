@@ -150,9 +150,9 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-6xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-800">
-        <CardHeader className="flex flex-row items-center justify-between">
+    <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-2 sm:p-4 pt-4 sm:pt-8">
+      <Card className="w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-4xl xl:max-w-6xl max-h-[98vh] sm:max-h-[95vh] flex flex-col bg-slate-900 border-slate-800 my-auto mx-2 sm:mx-4">
+        <CardHeader className="flex flex-row items-center justify-between flex-shrink-0">
           <CardTitle className="text-white flex items-center space-x-2">
             <Route className="w-5 h-5 text-cyan-400" />
             <span>{plan ? 'Editar Plano de Voo' : 'Novo Plano de Voo'}</span>
@@ -161,11 +161,11 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
             <X className="w-4 h-4" />
           </Button>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+        <CardContent className="overflow-y-auto flex-1 p-4 sm:p-6">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-2">
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div>
                     <Label htmlFor="aircraft" className="text-slate-300 text-xs">Aeronave</Label>
                     <Select value={form.aircraft} onValueChange={(value) => handleChange('aircraft', value)}>
@@ -191,7 +191,7 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="departure_airport" className="text-slate-300 text-xs">Partida (ICAO)</Label>
                     <Input id="departure_airport" value={form.departure_airport} onChange={(e) => handleChange('departure_airport', e.target.value.toUpperCase())} required className="bg-slate-800 border-slate-700 text-white" />
@@ -207,7 +207,7 @@ export default function FlightPlanModal({ isOpen, onClose, onSave, plan, favorit
                   <Input id="departure_time" type="datetime-local" value={form.departure_time} onChange={(e) => handleChange('departure_time', e.target.value)} required className="bg-slate-800 border-slate-700 text-white" />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <Label className="text-slate-400 text-xs">Dist (NM)</Label>
                     <Input value={calculations?.distance_nm || ''} readOnly className="bg-slate-700 border-slate-600 text-white" />

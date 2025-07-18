@@ -10,12 +10,11 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   return (
     <div className="flex h-screen bg-slate-950 relative overflow-hidden">
-      {/* World Map Background */}
       <WorldMap />
       
       <Sidebar />
       
-      <div className="flex-1 flex flex-col relative z-10">
+      <div className="flex-1 flex flex-col relative z-10 overflow-hidden">
         <Header />
         
         <main className="flex-1 p-6 overflow-auto">
