@@ -215,8 +215,10 @@ export namespace agenda {
         public async updateClient(params: RequestType<typeof api_agenda_clients_updateClient>): Promise<ResponseType<typeof api_agenda_clients_updateClient>> {
             // Construct the body with only the fields which we want encoded within the body (excluding query string or header fields)
             const body: Record<string, any> = {
+                active:     params.active,
                 address:    params.address,
                 city:       params.city,
+                company:    params.company,
                 document:   params.document,
                 email:      params.email,
                 name:       params.name,
