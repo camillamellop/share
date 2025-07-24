@@ -1,6 +1,6 @@
 import { api, APIError } from "encore.dev/api";
 import { db } from "./encore.service";
-import { getAuthData } from "~encore/auth";
+import { createClientSchema, updateClientSchema } from "./validators";
 
 export interface Client {
   id: string;
@@ -12,7 +12,9 @@ export interface Client {
   city: string;
   state: string;
   zip_code: string;
+  company: string;
   notes: string;
+  active: boolean;
   created_at: Date;
   updated_at: Date;
 }
@@ -26,7 +28,9 @@ export interface CreateClientRequest {
   city?: string;
   state?: string;
   zip_code?: string;
+  company?: string;
   notes?: string;
+  active?: boolean;
 }
 
 export interface UpdateClientRequest {
@@ -39,7 +43,9 @@ export interface UpdateClientRequest {
   city?: string;
   state?: string;
   zip_code?: string;
+  company?: string;
   notes?: string;
+  active?: boolean;
 }
 
 export interface ClientsResponse {
@@ -50,17 +56,18 @@ export interface ClientsResponse {
 export const createClient = api<CreateClientRequest, Client>(
   { auth: true, expose: true, method: "POST", path: "/clients" },
   async (req) => {
+    const { name, document, email, phone, address, city, state, zip_code, notes, company, active } = createClientSchema.parse(req);
     const id = `client_${Date.now()}`;
     const now = new Date();
 
     const client = await db.queryRow<Client>`
       INSERT INTO clients (
-        id, name, document, email, phone, address, city, state, zip_code, notes, created_at, updated_at
+        id, name, document, email, phone, address, city, state, zip_code, notes, company, active, created_at, updated_at
       )
       VALUES (
-        ${id}, ${req.name}, ${req.document}, ${req.email || ''}, ${req.phone || ''}, 
-        ${req.address || ''}, ${req.city || ''}, ${req.state || ''}, ${req.zip_code || ''}, 
-        ${req.notes || ''}, ${now}, ${now}
+        ${id}, ${name}, ${document}, ${email || ''}, ${phone || ''}, 
+        ${address || ''}, ${city || ''}, ${state || ''}, ${zip_code || ''}, 
+        ${notes || ''}, ${company || ''}, ${active !== false}, ${now}, ${now}
       )
       RETURNING *
     `;
@@ -84,21 +91,24 @@ export const getClients = api<void, ClientsResponse>(
 export const updateClient = api<UpdateClientRequest, Client>(
   { auth: true, expose: true, method: "PUT", path: "/clients/:id" },
   async (req) => {
+    const { id, ...updateData } = updateClientSchema.parse(req);
     const now = new Date();
 
     const client = await db.queryRow<Client>`
       UPDATE clients 
-      SET name = COALESCE(${req.name}, name),
-          document = COALESCE(${req.document}, document),
-          email = COALESCE(${req.email}, email),
-          phone = COALESCE(${req.phone}, phone),
-          address = COALESCE(${req.address}, address),
-          city = COALESCE(${req.city}, city),
-          state = COALESCE(${req.state}, state),
-          zip_code = COALESCE(${req.zip_code}, zip_code),
-          notes = COALESCE(${req.notes}, notes),
+      SET name = COALESCE(${updateData.name}, name),
+          document = COALESCE(${updateData.document}, document),
+          email = COALESCE(${updateData.email}, email),
+          phone = COALESCE(${updateData.phone}, phone),
+          address = COALESCE(${updateData.address}, address),
+          city = COALESCE(${updateData.city}, city),
+          state = COALESCE(${updateData.state}, state),
+          zip_code = COALESCE(${updateData.zip_code}, zip_code),
+          notes = COALESCE(${updateData.notes}, notes),
+          company = COALESCE(${updateData.company}, company),
+          active = COALESCE(${updateData.active}, active),
           updated_at = ${now}
-      WHERE id = ${req.id}
+      WHERE id = ${id}
       RETURNING *
     `;
 

@@ -1,6 +1,7 @@
 import { api } from "encore.dev/api";
 import { db } from "./encore.service";
 import { getAuthData } from "~encore/auth";
+import { createReceiptSchema } from "./validators";
 
 export interface Receipt {
   id: string;
@@ -36,21 +37,24 @@ export interface ReceiptsResponse {
 export const createReceipt = api<CreateReceiptRequest, Receipt>(
   { auth: true, expose: true, method: "POST", path: "/receipts" },
   async (req) => {
+    const validatedReq = createReceiptSchema.parse(req);
     const auth = getAuthData()!;
     const id = `receipt_${Date.now()}`;
     const numero = `REC${new Date().getFullYear()}${String(Date.now()).slice(-4)}`;
     const now = new Date();
 
-    const receipt = await db.queryRow<Receipt>`
+    await using tx = await db.begin();
+
+    const receipt = await tx.queryRow<Receipt>`
       INSERT INTO receipts (
         id, numero, cliente_nome, cliente_cpf_cnpj, cliente_endereco, 
         descricao, valor, data_emissao, observacoes, created_at,
         created_by_id, created_by_name, updated_at
       )
       VALUES (
-        ${id}, ${numero}, ${req.cliente_nome}, ${req.cliente_cpf_cnpj || ''}, 
-        ${req.cliente_endereco || ''}, ${req.descricao}, ${req.valor}, 
-        ${req.data_emissao}, ${req.observacoes || ''}, ${now},
+        ${id}, ${numero}, ${validatedReq.cliente_nome}, ${validatedReq.cliente_cpf_cnpj || ''}, 
+        ${validatedReq.cliente_endereco || ''}, ${validatedReq.descricao}, ${validatedReq.valor}, 
+        ${validatedReq.data_emissao}, ${validatedReq.observacoes || ''}, ${now},
         ${auth.userID}, ${auth.name}, ${now}
       )
       RETURNING *
@@ -58,14 +62,14 @@ export const createReceipt = api<CreateReceiptRequest, Receipt>(
 
     // Add financial transaction entry for a received payment
     const transactionId = `ft_${receipt!.id}`;
-    const transactionDescription = `Recebimento - ${req.descricao}`;
-    await db.exec`
+    const transactionDescription = `Recebimento - ${validatedReq.descricao}`;
+    await tx.exec`
       INSERT INTO financial_transactions (
         id, source_id, source_type, description, type, status, party_name, amount, transaction_date, created_at, updated_at
       )
       VALUES (
         ${transactionId}, ${receipt!.id}, 'receipt', ${transactionDescription},
-        'reimbursement', 'received', ${req.cliente_nome}, ${req.valor}, ${req.data_emissao}, ${now}, ${now}
+        'reimbursement', 'received', ${validatedReq.cliente_nome}, ${validatedReq.valor}, ${validatedReq.data_emissao}, ${now}, ${now}
       )
     `;
 

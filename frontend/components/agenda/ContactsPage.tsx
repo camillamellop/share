@@ -1,103 +1,32 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/components/ui/use-toast";
 import { Search, Plus, Edit, Phone, Mail, MapPin, Star, StarOff, Trash2 } from "lucide-react";
 import ContactModal from "./ContactModal";
-import backend from "~backend/client";
-import type { Contact, CreateContactRequest } from "~backend/agenda/contacts";
 import PageHeader from "../PageHeader";
+import { useContacts } from "../../hooks/useContacts";
+import LoadingSpinner from "../ui/LoadingSpinner";
+import ErrorMessage from "../ui/ErrorMessage";
+import type { Contact } from "~backend/agenda/contacts";
 
 export default function ContactsPage() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
 
-  const { data: contactsData, isLoading } = useQuery({
-    queryKey: ["contacts"],
-    queryFn: () => backend.agenda.getContacts()
-  });
-
-  const createContactMutation = useMutation({
-    mutationFn: (data: CreateContactRequest) => backend.agenda.createContact(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contacts"] });
-      toast({
-        title: "Sucesso",
-        description: "Contato criado com sucesso!",
-      });
-    },
-    onError: (error) => {
-      console.error("Error creating contact:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao criar contato.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const updateContactMutation = useMutation({
-    mutationFn: (data: any) => backend.agenda.updateContact(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contacts"] });
-      toast({
-        title: "Sucesso",
-        description: "Contato atualizado com sucesso!",
-      });
-    },
-    onError: (error) => {
-      console.error("Error updating contact:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar contato.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const deleteContactMutation = useMutation({
-    mutationFn: (id: string) => backend.agenda.deleteContact({ id }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contacts"] });
-      toast({
-        title: "Sucesso",
-        description: "Contato excluído com sucesso!",
-      });
-    },
-    onError: (error) => {
-      console.error("Error deleting contact:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao excluir contato.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const toggleFavoriteMutation = useMutation({
-    mutationFn: (id: string) => backend.agenda.toggleFavorite({ id }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["contacts"] });
-    },
-    onError: (error) => {
-      console.error("Error toggling favorite:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao alterar favorito.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const contacts = contactsData?.contacts || [];
+  const { 
+    contacts, 
+    isLoading, 
+    isError, 
+    error, 
+    createContact, 
+    updateContact, 
+    deleteContact, 
+    toggleFavorite 
+  } = useContacts();
 
   const filteredContacts = contacts.filter(contact => {
     const matchesSearch = !searchTerm || 
@@ -114,9 +43,9 @@ export default function ContactsPage() {
 
   const handleSaveContact = (contactData: any) => {
     if (editingContact) {
-      updateContactMutation.mutate({ ...contactData, id: editingContact.id });
+      updateContact({ ...contactData, id: editingContact.id });
     } else {
-      createContactMutation.mutate(contactData);
+      createContact(contactData);
     }
     setIsModalOpen(false);
     setEditingContact(null);
@@ -124,12 +53,12 @@ export default function ContactsPage() {
 
   const handleDeleteContact = (contactId: string) => {
     if (window.confirm('Tem certeza que deseja excluir este contato?')) {
-      deleteContactMutation.mutate(contactId);
+      deleteContact(contactId);
     }
   };
 
-  const toggleFavorite = (contactId: string) => {
-    toggleFavoriteMutation.mutate(contactId);
+  const handleToggleFavorite = (contactId: string) => {
+    toggleFavorite(contactId);
   };
 
   const openEditModal = (contact: Contact) => {
@@ -174,15 +103,15 @@ export default function ContactsPage() {
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-slate-700 rounded w-1/3"></div>
-          <div className="h-10 bg-slate-700 rounded"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-48 bg-slate-700 rounded"></div>
-            ))}
-          </div>
-        </div>
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="p-6">
+        <ErrorMessage message={error?.message || "Erro ao carregar contatos."} />
       </div>
     );
   }
@@ -249,7 +178,7 @@ export default function ContactsPage() {
                         variant="ghost"
                         size="icon"
                         className="h-6 w-6"
-                        onClick={() => toggleFavorite(contact.id)}
+                        onClick={() => handleToggleFavorite(contact.id)}
                       >
                         {contact.favorito ? (
                           <Star className="w-4 h-4 text-yellow-500 fill-current" />

@@ -1,86 +1,20 @@
 import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/use-toast";
 import { Plus, Search } from "lucide-react";
 import ClientTable from "./ClientTable";
 import ClientForm from "./ClientForm";
-import backend from "~backend/client";
-import type { CreateClientRequest } from "~backend/agenda/clients";
 import PageHeader from "../PageHeader";
+import { useClients } from "../../hooks/useClients";
+import LoadingSpinner from "../ui/LoadingSpinner";
+import ErrorMessage from "../ui/ErrorMessage";
 
 export default function ClientsPage() {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-
   const [showForm, setShowForm] = useState(false);
   const [editingClient, setEditingClient] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
 
-  const { data: clientsData, isLoading } = useQuery({
-    queryKey: ["clients"],
-    queryFn: () => backend.agenda.getClients()
-  });
-
-  const createClientMutation = useMutation({
-    mutationFn: (data: CreateClientRequest) => backend.agenda.createClient(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      toast({
-        title: "Sucesso",
-        description: "Cliente criado com sucesso!",
-      });
-    },
-    onError: (error) => {
-      console.error("Error creating client:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao criar cliente.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const updateClientMutation = useMutation({
-    mutationFn: (data: any) => backend.agenda.updateClient(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      toast({
-        title: "Sucesso",
-        description: "Cliente atualizado com sucesso!",
-      });
-    },
-    onError: (error) => {
-      console.error("Error updating client:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao atualizar cliente.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const deleteClientMutation = useMutation({
-    mutationFn: (id: string) => backend.agenda.deleteClient({ id }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      toast({
-        title: "Sucesso",
-        description: "Cliente excluído com sucesso!",
-      });
-    },
-    onError: (error) => {
-      console.error("Error deleting client:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao excluir cliente.",
-        variant: "destructive",
-      });
-    }
-  });
-
-  const clients = clientsData?.clients || [];
+  const { clients, isLoading, isError, error, createClient, updateClient, deleteClient } = useClients();
 
   const handleEdit = (client: any) => {
     setEditingClient(client);
@@ -89,16 +23,16 @@ export default function ClientsPage() {
 
   const handleDelete = (clientId: string) => {
     if (window.confirm('Tem certeza que deseja excluir este cliente?')) {
-      deleteClientMutation.mutate(clientId);
+      deleteClient(clientId);
     }
   };
 
   const handleSave = (client: any) => {
     if (client.id) {
-      updateClientMutation.mutate(client);
+      updateClient(client);
     } else {
       const { id, ...clientData } = client;
-      createClientMutation.mutate(clientData);
+      createClient(clientData);
     }
     setShowForm(false);
     setEditingClient(null);
@@ -112,8 +46,8 @@ export default function ClientsPage() {
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     client.document.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.company?.toLowerCase().includes(searchTerm.toLowerCase())
+    (client.email && client.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
+    (client.company && client.company.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   return (
@@ -141,12 +75,16 @@ export default function ClientsPage() {
         </div>
       </div>
 
-      <ClientTable
-        clients={filteredClients}
-        loading={isLoading}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      {isLoading && <LoadingSpinner />}
+      {isError && <ErrorMessage message={error?.message || "Erro ao carregar clientes."} />}
+      {!isLoading && !isError && (
+        <ClientTable
+          clients={filteredClients}
+          loading={isLoading}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
 
       {showForm && (
         <ClientForm

@@ -1,4 +1,7 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,40 +15,62 @@ interface ClientFormProps {
   onSave: (client: any) => void;
 }
 
+const clientSchema = z.object({
+  name: z.string().min(1, "Nome é obrigatório."),
+  document: z.string().min(1, "Documento é obrigatório."),
+  email: z.string().email("Email inválido.").optional().or(z.literal('')),
+  phone: z.string().optional(),
+  address: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zip_code: z.string().optional(),
+  company: z.string().optional(),
+  notes: z.string().optional(),
+  active: z.boolean(),
+});
+
+type ClientFormData = z.infer<typeof clientSchema>;
+
 export default function ClientForm({ client, onClose, onSave }: ClientFormProps) {
-  const [form, setForm] = useState({
-    name: '',
-    document: '',
-    email: '',
-    phone: '',
-    address: '',
-    company: '',
-    notes: '',
-    active: true,
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<ClientFormData>({
+    resolver: zodResolver(clientSchema),
+    defaultValues: {
+      name: '',
+      document: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      state: '',
+      zip_code: '',
+      company: '',
+      notes: '',
+      active: true,
+    }
   });
 
   useEffect(() => {
     if (client) {
-      setForm({
+      reset({
         name: client.name || '',
         document: client.document || '',
         email: client.email || '',
         phone: client.phone || '',
         address: client.address || '',
+        city: client.city || '',
+        state: client.state || '',
+        zip_code: client.zip_code || '',
         company: client.company || '',
         notes: client.notes || '',
         active: client.active !== false,
       });
+    } else {
+      reset();
     }
-  }, [client]);
+  }, [client, reset]);
 
-  const handleChange = (field: string, value: any) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSave({ ...form, id: client?.id });
+  const onSubmit = (data: ClientFormData) => {
+    onSave({ ...data, id: client?.id });
   };
 
   return (
@@ -60,92 +85,66 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
           </Button>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="name" className="text-slate-300">Nome *</Label>
-                <Input
-                  id="name"
-                  value={form.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
-                  required
-                  className="bg-slate-800 border-slate-700 text-white"
-                />
+                <Input id="name" {...register("name")} className="bg-slate-800 border-slate-700 text-white" />
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
               </div>
               
               <div>
                 <Label htmlFor="document" className="text-slate-300">CPF/CNPJ *</Label>
-                <Input
-                  id="document"
-                  value={form.document}
-                  onChange={(e) => handleChange('document', e.target.value)}
-                  required
-                  className="bg-slate-800 border-slate-700 text-white"
-                />
+                <Input id="document" {...register("document")} className="bg-slate-800 border-slate-700 text-white" />
+                {errors.document && <p className="text-red-500 text-xs mt-1">{errors.document.message}</p>}
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="email" className="text-slate-300">E-mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={form.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
-                  className="bg-slate-800 border-slate-700 text-white"
-                />
+                <Input id="email" type="email" {...register("email")} className="bg-slate-800 border-slate-700 text-white" />
+                {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
               </div>
               
               <div>
                 <Label htmlFor="phone" className="text-slate-300">Telefone</Label>
-                <Input
-                  id="phone"
-                  value={form.phone}
-                  onChange={(e) => handleChange('phone', e.target.value)}
-                  className="bg-slate-800 border-slate-700 text-white"
-                />
+                <Input id="phone" {...register("phone")} className="bg-slate-800 border-slate-700 text-white" />
               </div>
             </div>
 
             <div>
               <Label htmlFor="company" className="text-slate-300">Empresa</Label>
-              <Input
-                id="company"
-                value={form.company}
-                onChange={(e) => handleChange('company', e.target.value)}
-                className="bg-slate-800 border-slate-700 text-white"
-              />
+              <Input id="company" {...register("company")} className="bg-slate-800 border-slate-700 text-white" />
             </div>
 
             <div>
               <Label htmlFor="address" className="text-slate-300">Endereço</Label>
-              <Textarea
-                id="address"
-                value={form.address}
-                onChange={(e) => handleChange('address', e.target.value)}
-                className="bg-slate-800 border-slate-700 text-white"
-              />
+              <Input id="address" {...register("address")} className="bg-slate-800 border-slate-700 text-white" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="city" className="text-slate-300">Cidade</Label>
+                <Input id="city" {...register("city")} className="bg-slate-800 border-slate-700 text-white" />
+              </div>
+              <div>
+                <Label htmlFor="state" className="text-slate-300">Estado</Label>
+                <Input id="state" {...register("state")} className="bg-slate-800 border-slate-700 text-white" />
+              </div>
+              <div>
+                <Label htmlFor="zip_code" className="text-slate-300">CEP</Label>
+                <Input id="zip_code" {...register("zip_code")} className="bg-slate-800 border-slate-700 text-white" />
+              </div>
             </div>
 
             <div>
               <Label htmlFor="notes" className="text-slate-300">Observações</Label>
-              <Textarea
-                id="notes"
-                value={form.notes}
-                onChange={(e) => handleChange('notes', e.target.value)}
-                className="bg-slate-800 border-slate-700 text-white"
-              />
+              <Textarea id="notes" {...register("notes")} className="bg-slate-800 border-slate-700 text-white" />
             </div>
 
             <div className="flex items-center space-x-2">
-              <input
-                type="checkbox"
-                id="active"
-                checked={form.active}
-                onChange={(e) => handleChange('active', e.target.checked)}
-                className="rounded border-slate-700"
-              />
+              <input type="checkbox" id="active" {...register("active")} className="rounded border-slate-700" />
               <Label htmlFor="active" className="text-slate-300">Cliente ativo</Label>
             </div>
 

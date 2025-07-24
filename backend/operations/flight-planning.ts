@@ -185,7 +185,7 @@ export const createFlightPlan = api<CreateFlightPlanRequest, FlightPlan>(
     weightBalance.cg_position = 2.5; // meters from datum
     weightBalance.within_limits = weightBalance.total_weight <= 2500; // max weight
 
-    const flightPlan = await db.queryRow<any>`
+    const flightPlan = await db.queryRow<FlightPlan>`
       INSERT INTO flight_plans (
         id, flight_number, aircraft, departure_airport, arrival_airport,
         departure_time, arrival_time, route, altitude, ete_minutes, fuel_burn_liters,
@@ -196,19 +196,13 @@ export const createFlightPlan = api<CreateFlightPlanRequest, FlightPlan>(
         ${id}, ${req.flight_number}, ${req.aircraft}, ${req.departure_airport},
         ${req.arrival_airport}, ${req.departure_time}, ${arrivalTime},
         ${req.route || ''}, ${req.altitude || 10000}, ${params.ete_minutes}, ${params.fuel_burn_liters},
-        ${JSON.stringify(weightBalance)}, ${JSON.stringify(weatherData)},
+        ${weightBalance}, ${weatherData},
         false, 'draft', ${auth.userID}, ${now}, ${now}
       )
       RETURNING *
     `;
 
-    // Parse JSON fields back to objects for response
-    const result = {
-      ...flightPlan!,
-      weight_balance: JSON.parse(flightPlan!.weight_balance),
-      weather_data: JSON.parse(flightPlan!.weather_data)
-    };
-    return result;
+    return flightPlan!;
   }
 );
 
@@ -218,7 +212,7 @@ export const updateFlightPlan = api<UpdateFlightPlanRequest, FlightPlan>(
   async (req) => {
     const now = new Date();
 
-    const flightPlan = await db.queryRow<any>`
+    const flightPlan = await db.queryRow<FlightPlan>`
       UPDATE flight_plans 
       SET flight_number = COALESCE(${req.flight_number}, flight_number),
           aircraft = COALESCE(${req.aircraft}, aircraft),
@@ -230,7 +224,7 @@ export const updateFlightPlan = api<UpdateFlightPlanRequest, FlightPlan>(
           altitude = COALESCE(${req.altitude}, altitude),
           ete_minutes = COALESCE(${req.ete_minutes}, ete_minutes),
           fuel_burn_liters = COALESCE(${req.fuel_burn_liters}, fuel_burn_liters),
-          weight_balance = COALESCE(${req.weight_balance ? JSON.stringify(req.weight_balance) : null}, weight_balance),
+          weight_balance = COALESCE(${req.weight_balance}, weight_balance),
           checklist_completed = COALESCE(${req.checklist_completed}, checklist_completed),
           status = COALESCE(${req.status}, status),
           updated_at = ${now}
@@ -242,13 +236,7 @@ export const updateFlightPlan = api<UpdateFlightPlanRequest, FlightPlan>(
       throw APIError.notFound("Flight plan not found");
     }
 
-    // Parse JSON fields back to objects for response
-    const result = {
-      ...flightPlan,
-      weight_balance: JSON.parse(flightPlan.weight_balance),
-      weather_data: JSON.parse(flightPlan.weather_data)
-    };
-    return result;
+    return flightPlan;
   }
 );
 
@@ -256,18 +244,10 @@ export const updateFlightPlan = api<UpdateFlightPlanRequest, FlightPlan>(
 export const getFlightPlans = api<void, FlightPlansResponse>(
   { auth: true, expose: true, method: "GET", path: "/flight-plans" },
   async () => {
-    const plans = await db.queryAll<any>`
+    const plans = await db.queryAll<FlightPlan>`
       SELECT * FROM flight_plans ORDER BY created_at DESC
     `;
-    
-    // Parse JSON fields for each plan
-    const parsedPlans = plans.map(plan => ({
-      ...plan,
-      weight_balance: JSON.parse(plan.weight_balance),
-      weather_data: JSON.parse(plan.weather_data)
-    }));
-
-    return { flight_plans: parsedPlans };
+    return { flight_plans: plans };
   }
 );
 

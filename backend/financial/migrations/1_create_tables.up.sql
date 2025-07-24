@@ -32,7 +32,7 @@ CREATE TABLE travel_reports (
   destino TEXT NOT NULL,
   data_inicio DATE NOT NULL,
   data_fim DATE NOT NULL,
-  despesas TEXT NOT NULL, -- JSON array
+  despesas JSONB NOT NULL,
   valor_total DOUBLE PRECISION NOT NULL,
   observacoes TEXT,
   created_at TIMESTAMP NOT NULL

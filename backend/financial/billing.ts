@@ -1,6 +1,7 @@
 import { api } from "encore.dev/api";
 import { db } from "./encore.service";
 import { getAuthData } from "~encore/auth";
+import { createBillingSchema } from "./validators";
 
 export interface BillingDocument {
   id: string;
@@ -31,19 +32,22 @@ export interface BillingResponse {
 export const createBilling = api<CreateBillingRequest, BillingDocument>(
   { auth: true, expose: true, method: "POST", path: "/billing" },
   async (req) => {
+    const { devedor, referencia, valor, vencimento } = createBillingSchema.parse(req);
     const auth = getAuthData()!;
     const id = `billing_${Date.now()}`;
     const numero_cobranca = `COB-${Date.now()}`;
     const now = new Date();
 
-    const billing = await db.queryRow<BillingDocument>`
+    await using tx = await db.begin();
+
+    const billing = await tx.queryRow<BillingDocument>`
       INSERT INTO billing_documents (
         id, numero_cobranca, devedor, referencia, valor, vencimento, status, 
         created_at, created_by_id, created_by_name, updated_at
       )
       VALUES (
-        ${id}, ${numero_cobranca}, ${req.devedor}, ${req.referencia}, 
-        ${req.valor}, ${req.vencimento}, 'pending', ${now},
+        ${id}, ${numero_cobranca}, ${devedor}, ${referencia}, 
+        ${valor}, ${vencimento}, 'pending', ${now},
         ${auth.userID}, ${auth.name}, ${now}
       )
       RETURNING *
@@ -51,14 +55,14 @@ export const createBilling = api<CreateBillingRequest, BillingDocument>(
 
     // Add financial transaction entry
     const transactionId = `ft_${billing!.id}`;
-    const transactionDescription = `Cobrança - ${req.referencia}`;
-    await db.exec`
+    const transactionDescription = `Cobrança - ${referencia}`;
+    await tx.exec`
       INSERT INTO financial_transactions (
         id, source_id, source_type, description, type, status, party_name, amount, transaction_date, due_date, created_at, updated_at
       )
       VALUES (
         ${transactionId}, ${billing!.id}, 'billing', ${transactionDescription},
-        'reimbursement', 'billed', ${req.devedor}, ${req.valor}, ${now}, ${req.vencimento}, ${now}, ${now}
+        'reimbursement', 'billed', ${devedor}, ${valor}, ${now}, ${vencimento}, ${now}, ${now}
       )
     `;
 

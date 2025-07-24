@@ -2,9 +2,9 @@ CREATE TABLE user_profiles (
   id TEXT PRIMARY KEY,
   user_id TEXT NOT NULL UNIQUE,
   foto_perfil TEXT,
-  dados_pessoais TEXT NOT NULL, -- JSON
-  dados_profissionais TEXT NOT NULL, -- JSON
-  dados_bancarios TEXT NOT NULL, -- JSON
+  dados_pessoais JSONB NOT NULL,
+  dados_profissionais JSONB NOT NULL,
+  dados_bancarios JSONB NOT NULL,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL
 );

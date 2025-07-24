@@ -82,22 +82,15 @@ export const createUserProfile = api<CreateUserProfileRequest, UserProfile>(
       )
       VALUES (
         ${id}, ${req.user_id}, ${req.foto_perfil || ''}, 
-        ${JSON.stringify(req.dados_pessoais)}, 
-        ${JSON.stringify(req.dados_profissionais)}, 
-        ${JSON.stringify(req.dados_bancarios)}, 
+        ${req.dados_pessoais}, 
+        ${req.dados_profissionais}, 
+        ${req.dados_bancarios}, 
         ${now}, ${now}
       )
       RETURNING *
     `;
 
-    // Parse JSON fields back to objects for response
-    const result = {
-      ...profile!,
-      dados_pessoais: JSON.parse(profile!.dados_pessoais as any),
-      dados_profissionais: JSON.parse(profile!.dados_profissionais as any),
-      dados_bancarios: JSON.parse(profile!.dados_bancarios as any)
-    };
-    return result;
+    return profile!;
   }
 );
 
@@ -109,7 +102,7 @@ export const updateUserProfile = api<UpdateUserProfileRequest, UserProfile>(
     const now = new Date();
 
     // Get current profile to merge with updates
-    const currentProfile = await db.queryRow<any>`
+    const currentProfile = await db.queryRow<UserProfile>`
       SELECT * FROM user_profiles WHERE id = ${req.id}
     `;
 
@@ -121,30 +114,25 @@ export const updateUserProfile = api<UpdateUserProfileRequest, UserProfile>(
       throw APIError.permissionDenied("you are not authorized to update this profile");
     }
 
-    // Parse current JSON data
-    const currentDadosPessoais = JSON.parse(currentProfile.dados_pessoais);
-    const currentDadosProfissionais = JSON.parse(currentProfile.dados_profissionais);
-    const currentDadosBancarios = JSON.parse(currentProfile.dados_bancarios);
-
     // Merge with updates
     const updatedDadosPessoais = req.dados_pessoais 
-      ? { ...currentDadosPessoais, ...req.dados_pessoais }
-      : currentDadosPessoais;
+      ? { ...currentProfile.dados_pessoais, ...req.dados_pessoais }
+      : currentProfile.dados_pessoais;
     
     const updatedDadosProfissionais = req.dados_profissionais
-      ? { ...currentDadosProfissionais, ...req.dados_profissionais }
-      : currentDadosProfissionais;
+      ? { ...currentProfile.dados_profissionais, ...req.dados_profissionais }
+      : currentProfile.dados_profissionais;
     
     const updatedDadosBancarios = req.dados_bancarios
-      ? { ...currentDadosBancarios, ...req.dados_bancarios }
-      : currentDadosBancarios;
+      ? { ...currentProfile.dados_bancarios, ...req.dados_bancarios }
+      : currentProfile.dados_bancarios;
 
     const profile = await db.queryRow<UserProfile>`
       UPDATE user_profiles 
       SET foto_perfil = COALESCE(${req.foto_perfil}, foto_perfil),
-          dados_pessoais = ${JSON.stringify(updatedDadosPessoais)},
-          dados_profissionais = ${JSON.stringify(updatedDadosProfissionais)},
-          dados_bancarios = ${JSON.stringify(updatedDadosBancarios)},
+          dados_pessoais = ${updatedDadosPessoais},
+          dados_profissionais = ${updatedDadosProfissionais},
+          dados_bancarios = ${updatedDadosBancarios},
           updated_at = ${now}
       WHERE id = ${req.id}
       RETURNING *
@@ -154,14 +142,7 @@ export const updateUserProfile = api<UpdateUserProfileRequest, UserProfile>(
       throw APIError.notFound("Profile not found");
     }
 
-    // Parse JSON fields back to objects for response
-    const result = {
-      ...profile,
-      dados_pessoais: JSON.parse(profile.dados_pessoais as any),
-      dados_profissionais: JSON.parse(profile.dados_profissionais as any),
-      dados_bancarios: JSON.parse(profile.dados_bancarios as any)
-    };
-    return result;
+    return profile;
   }
 );
 
@@ -172,7 +153,7 @@ export const getMyProfile = api<void, UserProfileResponse>(
     const auth = getAuthData();
     if (!auth) throw APIError.unauthenticated();
     
-    const profile = await db.queryRow<any>`
+    const profile = await db.queryRow<UserProfile>`
       SELECT * FROM user_profiles WHERE user_id = ${auth.userID}
     `;
     
@@ -180,15 +161,7 @@ export const getMyProfile = api<void, UserProfileResponse>(
       return { profile: null };
     }
 
-    // Parse JSON fields back to objects for response
-    const result = {
-      ...profile,
-      dados_pessoais: JSON.parse(profile.dados_pessoais),
-      dados_profissionais: JSON.parse(profile.dados_profissionais),
-      dados_bancarios: JSON.parse(profile.dados_bancarios)
-    };
-
-    return { profile: result };
+    return { profile };
   }
 );
 

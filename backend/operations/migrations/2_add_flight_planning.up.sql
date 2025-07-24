@@ -9,8 +9,8 @@ CREATE TABLE flight_plans (
   route TEXT,
   altitude INTEGER,
   fuel_required INTEGER,
-  weight_balance TEXT NOT NULL, -- JSON
-  weather_data TEXT NOT NULL, -- JSON
+  weight_balance JSONB NOT NULL,
+  weather_data JSONB NOT NULL,
   checklist_completed BOOLEAN NOT NULL DEFAULT FALSE,
   status TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'filed', 'approved', 'active', 'completed')),
   created_by TEXT NOT NULL,

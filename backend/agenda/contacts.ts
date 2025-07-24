@@ -1,5 +1,6 @@
 import { api, APIError } from "encore.dev/api";
 import { db } from "./encore.service";
+import { createContactSchema, updateContactSchema } from "./validators";
 
 export interface Contact {
   id: string;
@@ -52,6 +53,7 @@ export interface ContactsResponse {
 export const createContact = api<CreateContactRequest, Contact>(
   { auth: true, expose: true, method: "POST", path: "/contacts" },
   async (req) => {
+    const validatedReq = createContactSchema.parse(req);
     const id = `contact_${Date.now()}`;
     const now = new Date();
 
@@ -62,22 +64,16 @@ export const createContact = api<CreateContactRequest, Contact>(
         created_at, updated_at
       )
       VALUES (
-        ${id}, ${req.nome}, ${req.categoria_nome}, ${req.categoria_cor || ''}, 
-        ${req.empresa || ''}, ${req.cargo || ''}, ${req.observacoes || ''}, 
-        ${req.favorito || false}, ${JSON.stringify(req.telefones)}, 
-        ${JSON.stringify(req.emails)}, ${req.endereco_principal || ''}, 
+        ${id}, ${validatedReq.nome}, ${validatedReq.categoria_nome}, ${validatedReq.categoria_cor || ''}, 
+        ${validatedReq.empresa || ''}, ${validatedReq.cargo || ''}, ${validatedReq.observacoes || ''}, 
+        ${validatedReq.favorito || false}, ${validatedReq.telefones}, 
+        ${validatedReq.emails}, ${validatedReq.endereco_principal || ''}, 
         ${now}, ${now}
       )
       RETURNING *
     `;
 
-    // Parse JSON arrays back to objects for response
-    const result = {
-      ...contact!,
-      telefones: JSON.parse(contact!.telefones as any),
-      emails: JSON.parse(contact!.emails as any)
-    };
-    return result;
+    return contact!;
   }
 );
 
@@ -85,22 +81,23 @@ export const createContact = api<CreateContactRequest, Contact>(
 export const updateContact = api<UpdateContactRequest, Contact>(
   { auth: true, expose: true, method: "PUT", path: "/contacts/:id" },
   async (req) => {
+    const { id, ...updateData } = updateContactSchema.parse(req);
     const now = new Date();
 
     const contact = await db.queryRow<Contact>`
       UPDATE contacts 
-      SET nome = COALESCE(${req.nome}, nome),
-          categoria_nome = COALESCE(${req.categoria_nome}, categoria_nome),
-          categoria_cor = COALESCE(${req.categoria_cor}, categoria_cor),
-          empresa = COALESCE(${req.empresa}, empresa),
-          cargo = COALESCE(${req.cargo}, cargo),
-          observacoes = COALESCE(${req.observacoes}, observacoes),
-          favorito = COALESCE(${req.favorito}, favorito),
-          telefones = COALESCE(${req.telefones ? JSON.stringify(req.telefones) : null}, telefones),
-          emails = COALESCE(${req.emails ? JSON.stringify(req.emails) : null}, emails),
-          endereco_principal = COALESCE(${req.endereco_principal}, endereco_principal),
+      SET nome = COALESCE(${updateData.nome}, nome),
+          categoria_nome = COALESCE(${updateData.categoria_nome}, categoria_nome),
+          categoria_cor = COALESCE(${updateData.categoria_cor}, categoria_cor),
+          empresa = COALESCE(${updateData.empresa}, empresa),
+          cargo = COALESCE(${updateData.cargo}, cargo),
+          observacoes = COALESCE(${updateData.observacoes}, observacoes),
+          favorito = COALESCE(${updateData.favorito}, favorito),
+          telefones = COALESCE(${updateData.telefones}, telefones),
+          emails = COALESCE(${updateData.emails}, emails),
+          endereco_principal = COALESCE(${updateData.endereco_principal}, endereco_principal),
           updated_at = ${now}
-      WHERE id = ${req.id}
+      WHERE id = ${id}
       RETURNING *
     `;
 
@@ -108,13 +105,7 @@ export const updateContact = api<UpdateContactRequest, Contact>(
       throw APIError.notFound("Contact not found");
     }
 
-    // Parse JSON arrays back to objects for response
-    const result = {
-      ...contact,
-      telefones: JSON.parse(contact.telefones as any),
-      emails: JSON.parse(contact.emails as any)
-    };
-    return result;
+    return contact;
   }
 );
 
@@ -122,18 +113,10 @@ export const updateContact = api<UpdateContactRequest, Contact>(
 export const getContacts = api<void, ContactsResponse>(
   { auth: true, expose: true, method: "GET", path: "/contacts" },
   async () => {
-    const contacts = await db.queryAll<any>`
+    const contacts = await db.queryAll<Contact>`
       SELECT * FROM contacts ORDER BY favorito DESC, nome ASC
     `;
-    
-    // Parse JSON arrays for each contact
-    const parsedContacts = contacts.map(contact => ({
-      ...contact,
-      telefones: JSON.parse(contact.telefones),
-      emails: JSON.parse(contact.emails)
-    }));
-
-    return { contacts: parsedContacts };
+    return { contacts };
   }
 );
 
@@ -163,12 +146,6 @@ export const toggleFavorite = api<{ id: string }, Contact>(
       throw APIError.notFound("Contact not found");
     }
 
-    // Parse JSON arrays back to objects for response
-    const result = {
-      ...contact,
-      telefones: JSON.parse(contact.telefones as any),
-      emails: JSON.parse(contact.emails as any)
-    };
-    return result;
+    return contact;
   }
 );

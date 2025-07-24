@@ -7,8 +7,8 @@ CREATE TABLE contacts (
   cargo TEXT,
   observacoes TEXT,
   favorito BOOLEAN NOT NULL DEFAULT FALSE,
-  telefones TEXT NOT NULL, -- JSON array
-  emails TEXT NOT NULL, -- JSON array
+  telefones JSONB NOT NULL,
+  emails JSONB NOT NULL,
   endereco_principal TEXT,
   created_at TIMESTAMP NOT NULL,
   updated_at TIMESTAMP NOT NULL
@@ -21,6 +21,9 @@ CREATE TABLE clients (
   email TEXT,
   phone TEXT,
   address TEXT,
+  city TEXT,
+  state TEXT,
+  zip_code TEXT,
   company TEXT,
   notes TEXT,
   active BOOLEAN NOT NULL DEFAULT TRUE,

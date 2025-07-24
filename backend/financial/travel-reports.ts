@@ -1,6 +1,7 @@
 import { api } from "encore.dev/api";
 import { db } from "./encore.service";
 import { getAuthData } from "~encore/auth";
+import { createTravelReportSchema } from "./validators";
 
 export interface TravelExpense {
   categoria: string;
@@ -46,22 +47,25 @@ export interface TravelReportsResponse {
 export const createTravelReport = api<CreateTravelReportRequest, TravelReport>(
   { auth: true, expose: true, method: "POST", path: "/travel-reports" },
   async (req) => {
+    const validatedReq = createTravelReportSchema.parse(req);
     const auth = getAuthData()!;
     const id = `report_${Date.now()}`;
     const numero_relatorio = `REL-${Date.now()}`;
     const now = new Date();
-    const valor_total = req.despesas.reduce((sum, d) => sum + d.valor, 0);
+    const valor_total = validatedReq.despesas.reduce((sum, d) => sum + d.valor, 0);
 
-    const report = await db.queryRow<TravelReport>`
+    await using tx = await db.begin();
+
+    const report = await tx.queryRow<TravelReport>`
       INSERT INTO travel_reports (
         id, numero_relatorio, cotista, aeronave, tripulante, destino,
         data_inicio, data_fim, despesas, valor_total, observacoes, created_at,
         created_by_id, created_by_name, updated_at
       )
       VALUES (
-        ${id}, ${numero_relatorio}, ${req.cotista}, ${req.aeronave}, 
-        ${req.tripulante}, ${req.destino}, ${req.data_inicio}, ${req.data_fim},
-        ${JSON.stringify(req.despesas)}, ${valor_total}, ${req.observacoes || ''}, ${now},
+        ${id}, ${numero_relatorio}, ${validatedReq.cotista}, ${validatedReq.aeronave}, 
+        ${validatedReq.tripulante}, ${validatedReq.destino}, ${validatedReq.data_inicio}, ${validatedReq.data_fim},
+        ${validatedReq.despesas}, ${valor_total}, ${validatedReq.observacoes || ''}, ${now},
         ${auth.userID}, ${auth.name}, ${now}
       )
       RETURNING *
@@ -69,20 +73,18 @@ export const createTravelReport = api<CreateTravelReportRequest, TravelReport>(
 
     // Add financial transaction entry
     const transactionId = `ft_${report!.id}`;
-    const transactionDescription = `Reembolso Viagem - ${req.tripulante} - ${req.destino}`;
-    await db.exec`
+    const transactionDescription = `Reembolso Viagem - ${validatedReq.tripulante} - ${validatedReq.destino}`;
+    await tx.exec`
       INSERT INTO financial_transactions (
         id, source_id, source_type, description, type, status, party_name, amount, transaction_date, created_at, updated_at
       )
       VALUES (
         ${transactionId}, ${report!.id}, 'travel_report', ${transactionDescription},
-        'reimbursement', 'awaiting_billing', ${req.cotista}, ${valor_total}, ${req.data_fim}, ${now}, ${now}
+        'reimbursement', 'awaiting_billing', ${validatedReq.cotista}, ${valor_total}, ${validatedReq.data_fim}, ${now}, ${now}
       )
     `;
 
-    // Parse the JSON back to object for response
-    const result = { ...report!, despesas: JSON.parse(report!.despesas as any) };
-    return result;
+    return report!;
   }
 );
 
@@ -90,16 +92,9 @@ export const createTravelReport = api<CreateTravelReportRequest, TravelReport>(
 export const getTravelReports = api<void, TravelReportsResponse>(
   { auth: true, expose: true, method: "GET", path: "/travel-reports" },
   async () => {
-    const reports = await db.queryAll<any>`
+    const reports = await db.queryAll<TravelReport>`
       SELECT * FROM travel_reports ORDER BY created_at DESC
     `;
-    
-    // Parse JSON despesas for each report
-    const parsedReports = reports.map(report => ({
-      ...report,
-      despesas: JSON.parse(report.despesas)
-    }));
-
-    return { reports: parsedReports };
+    return { reports };
   }
 );
