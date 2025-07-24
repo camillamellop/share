@@ -1,7 +1,6 @@
 import { api } from "encore.dev/api";
 import { db } from "./encore.service";
 import { getAuthData } from "~encore/auth";
-import { createTravelReportSchema } from "./validators";
 
 export interface TravelExpense {
   categoria: string;
@@ -47,7 +46,7 @@ export interface TravelReportsResponse {
 export const createTravelReport = api<CreateTravelReportRequest, TravelReport>(
   { auth: true, expose: true, method: "POST", path: "/travel-reports" },
   async (req) => {
-    const validatedReq = createTravelReportSchema.parse(req);
+    const validatedReq = req;
     const auth = getAuthData()!;
     const id = `report_${Date.now()}`;
     const numero_relatorio = `REL-${Date.now()}`;

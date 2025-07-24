@@ -1,7 +1,6 @@
 import { api } from "encore.dev/api";
 import { db } from "./encore.service";
 import { getAuthData } from "~encore/auth";
-import { createBillingSchema } from "./validators";
 
 export interface BillingDocument {
   id: string;
@@ -32,7 +31,7 @@ export interface BillingResponse {
 export const createBilling = api<CreateBillingRequest, BillingDocument>(
   { auth: true, expose: true, method: "POST", path: "/billing" },
   async (req) => {
-    const { devedor, referencia, valor, vencimento } = createBillingSchema.parse(req);
+    const { devedor, referencia, valor, vencimento } = req;
     const auth = getAuthData()!;
     const id = `billing_${Date.now()}`;
     const numero_cobranca = `COB-${Date.now()}`;

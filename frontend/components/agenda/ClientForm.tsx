@@ -74,17 +74,30 @@ export default function ClientForm({ client, onClose, onSave }: ClientFormProps)
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-slate-900 border-slate-800">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-white">
+    <div className="fixed inset-0 bg-black/50 flex items-start justify-center z-50 p-2 sm:p-4 pt-4 sm:pt-8">
+      <Card className="
+        w-full 
+        max-w-sm sm:max-w-md md:max-w-lg lg:max-w-2xl
+        max-h-[98vh] sm:max-h-[95vh] 
+        flex flex-col
+        overflow-hidden
+        bg-slate-900 
+        border-slate-800
+        my-auto
+        mx-2 sm:mx-4
+        animate-in
+        slide-in-from-bottom-4
+        duration-300
+      ">
+        <CardHeader className="flex flex-row items-center justify-between py-3 px-4 sm:py-4 sm:px-6 border-b border-slate-800 flex-shrink-0">
+          <CardTitle className="text-white text-base sm:text-lg">
             {client ? 'Editar Cliente' : 'Novo Cliente'}
           </CardTitle>
-          <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-white">
+          <Button variant="ghost" size="icon" onClick={onClose} className="text-slate-400 hover:text-white h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0">
             <X className="w-4 h-4" />
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4 sm:p-6 overflow-y-auto flex-1">
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>

@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useBackend } from "./useBackend";
 import { useToast } from "@/components/ui/use-toast";
-import type { CreateContactRequest, UpdateContactRequest } from "~backend/agenda/contacts";
+import type { CreateContactRequest, UpdateContactRequest } from "~backend/agenda/validators";
 
 export function useContacts() {
   const backend = useBackend();

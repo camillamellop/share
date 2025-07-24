@@ -1,7 +1,6 @@
 import { api } from "encore.dev/api";
 import { db } from "./encore.service";
 import { getAuthData } from "~encore/auth";
-import { createReceiptSchema } from "./validators";
 
 export interface Receipt {
   id: string;
@@ -37,7 +36,7 @@ export interface ReceiptsResponse {
 export const createReceipt = api<CreateReceiptRequest, Receipt>(
   { auth: true, expose: true, method: "POST", path: "/receipts" },
   async (req) => {
-    const validatedReq = createReceiptSchema.parse(req);
+    const validatedReq = req;
     const auth = getAuthData()!;
     const id = `receipt_${Date.now()}`;
     const numero = `REC${new Date().getFullYear()}${String(Date.now()).slice(-4)}`;

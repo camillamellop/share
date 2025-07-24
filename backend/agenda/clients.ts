@@ -1,6 +1,5 @@
 import { api, APIError } from "encore.dev/api";
 import { db } from "./encore.service";
-import { createClientSchema, updateClientSchema } from "./validators";
 
 export interface Client {
   id: string;
@@ -56,7 +55,7 @@ export interface ClientsResponse {
 export const createClient = api<CreateClientRequest, Client>(
   { auth: true, expose: true, method: "POST", path: "/clients" },
   async (req) => {
-    const { name, document, email, phone, address, city, state, zip_code, notes, company, active } = createClientSchema.parse(req);
+    const { name, document, email, phone, address, city, state, zip_code, notes, company, active } = req;
     const id = `client_${Date.now()}`;
     const now = new Date();
 
@@ -91,7 +90,7 @@ export const getClients = api<void, ClientsResponse>(
 export const updateClient = api<UpdateClientRequest, Client>(
   { auth: true, expose: true, method: "PUT", path: "/clients/:id" },
   async (req) => {
-    const { id, ...updateData } = updateClientSchema.parse(req);
+    const { id, ...updateData } = req;
     const now = new Date();
 
     const client = await db.queryRow<Client>`

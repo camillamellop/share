@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useBackend } from "./useBackend";
 import { useToast } from "@/components/ui/use-toast";
-import type { CreateClientRequest, UpdateClientRequest } from "~backend/agenda/clients";
+import type { CreateClientRequest, UpdateClientRequest } from "~backend/agenda/validators";
 
 export function useClients() {
   const backend = useBackend();

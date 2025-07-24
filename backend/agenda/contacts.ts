@@ -1,6 +1,5 @@
 import { api, APIError } from "encore.dev/api";
 import { db } from "./encore.service";
-import { createContactSchema, updateContactSchema } from "./validators";
 
 export interface Contact {
   id: string;
@@ -53,7 +52,7 @@ export interface ContactsResponse {
 export const createContact = api<CreateContactRequest, Contact>(
   { auth: true, expose: true, method: "POST", path: "/contacts" },
   async (req) => {
-    const validatedReq = createContactSchema.parse(req);
+    const validatedReq = req;
     const id = `contact_${Date.now()}`;
     const now = new Date();
 
@@ -81,7 +80,7 @@ export const createContact = api<CreateContactRequest, Contact>(
 export const updateContact = api<UpdateContactRequest, Contact>(
   { auth: true, expose: true, method: "PUT", path: "/contacts/:id" },
   async (req) => {
-    const { id, ...updateData } = updateContactSchema.parse(req);
+    const { id, ...updateData } = req;
     const now = new Date();
 
     const contact = await db.queryRow<Contact>`
