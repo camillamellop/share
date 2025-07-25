@@ -41,24 +41,11 @@ export default function Sidebar({ isMobileOpen, setMobileOpen }: SidebarProps) {
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({
     "Portal Financeiro": true,
     "Agenda": true,
-    "Operações de Voo": true,
     "Configurações": true,
   });
 
   const menuItems = [
     { icon: Home, label: "Início", active: true, path: "/" },
-    { 
-      icon: Plane, 
-      label: "Operações de Voo",
-      hasSubmenu: true,
-      submenu: [
-        { icon: CalendarCheck, label: "Agendamento", path: "/operations/scheduling" },
-        { icon: Route, label: "Plano de Voo", path: "/operations/flight-plan" },
-        { icon: BookOpen, label: "Diário de Bordo", path: "/operations/logbook" },
-        { icon: BarChart3, label: "Relatório Tripulação", path: "/operations/crew-report" },
-        { icon: UserCog, label: "Gestão de Tripulação", path: "/operations/crew-management" }
-      ]
-    },
     { 
       icon: Calendar, 
       label: "Agenda",
