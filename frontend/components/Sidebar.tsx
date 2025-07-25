@@ -41,8 +41,7 @@ export default function Sidebar({ isMobileOpen, setMobileOpen }: SidebarProps) {
   const [expandedMenus, setExpandedMenus] = useState<{ [key: string]: boolean }>({
     "Portal Financeiro": true,
     "Agenda": true,
-    "Configurações": true,
-  });
+    });
 
   const menuItems = [
     { icon: Home, label: "Início", active: true, path: "/" },
@@ -55,10 +54,7 @@ export default function Sidebar({ isMobileOpen, setMobileOpen }: SidebarProps) {
         { icon: UserCheck, label: "Clientes/Cotistas", path: "/agenda/clients" }
       ]
     },
-    { icon: BarChart3, label: "Relatórios", path: "/reports" },
-    { icon: Users, label: "Tripulação" },
     { icon: MessageSquare, label: "Comunicações", path: "/communications" },
-    { icon: FileText, label: "Documentos" },
     { 
       icon: DollarSign, 
       label: "Portal Financeiro",
@@ -71,16 +67,10 @@ export default function Sidebar({ isMobileOpen, setMobileOpen }: SidebarProps) {
         { icon: Scale, label: "Conciliação", path: "/financial/reconciliation" },
         { icon: ShoppingCart, label: "Solicitações de Compras", path: "/financial/purchasing" }
       ]
+			 { icon: BarChart3, label: "Relatórios", path: "/reports" },
     },
 
-     { 
-      icon: Settings, 
-      label: "Configurações",
-      hasSubmenu: true,
-      submenu: [
-        { icon: Bell, label: "Notificações", path: "/settings/notifications" },
-        ...(user?.role === 'admin' ? [{ icon: UserCog, label: "Gestão de Usuários", path: "/settings/users" }] : [])
-      ]
+
     }
   ];
 
