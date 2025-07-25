@@ -4,6 +4,7 @@ import TasksSummary from "./TasksSummary";
 import FlightsSummary from "./FlightsSummary";
 import QuickActions from "./QuickActions";
 import MaintenanceAlerts from "./maintenance/MaintenanceAlerts";
+import OperationsMaintenanceMenu from "./OperationsMaintenanceMenu";
 
 export default function Dashboard() {
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -24,7 +25,10 @@ export default function Dashboard() {
         <MaintenanceAlerts />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <TasksSummary />
-          <FlightsSummary />
+          <div className="space-y-6">
+            <FlightsSummary />
+            <UserCard />
+          </div>
         </div>
       </div>
       
@@ -47,7 +51,7 @@ export default function Dashboard() {
           </div>
         </div>
         
-        <UserCard />
+        <OperationsMaintenanceMenu />
       </div>
     </div>
   );
