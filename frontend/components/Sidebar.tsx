@@ -57,9 +57,7 @@ export default function Sidebar({ isMobileOpen, setMobileOpen }: SidebarProps) {
     },
     { icon: BarChart3, label: "Relatórios", path: "/reports" },
     { icon: Users, label: "Tripulação" },
-    { icon: Briefcase, label: "Manutenção", path: "/maintenance" },
     { icon: MessageSquare, label: "Comunicações", path: "/communications" },
-    { icon: CheckSquare, label: "Tarefas", path: "/tasks" },
     { icon: FileText, label: "Documentos" },
     { 
       icon: DollarSign, 
@@ -74,9 +72,8 @@ export default function Sidebar({ isMobileOpen, setMobileOpen }: SidebarProps) {
         { icon: ShoppingCart, label: "Solicitações de Compras", path: "/financial/purchasing" }
       ]
     },
-    { icon: User, label: "Meu Perfil", path: "/profile" },
-    { icon: Palmtree, label: "Férias", path: "/vacation" },
-    { 
+
+     { 
       icon: Settings, 
       label: "Configurações",
       hasSubmenu: true,
